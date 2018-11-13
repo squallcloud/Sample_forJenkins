@@ -1,0 +1,74 @@
+﻿pipeline {
+    agent {
+        label 'test'
+    }
+    options {
+        timeout(time: 10, unit: 'SECONDS')
+    }
+    stages {
+        stage('test1') {
+            steps {
+                script {
+                    def jenkins_ins = Jenkins.instance
+                    println jenkins_ins
+                    
+                    def labels = jenkins_ins.getLabels()
+                    labels.each { label->
+                        println "   ラベル：${label}"
+                        def nodes = label.getNodes()
+                        nodes.each { node->
+                            println "       ノード：${node}"
+                        }
+                    }
+                    
+                    println "次"
+                }
+            }
+        }
+        
+        stage('test2') {
+            steps {
+                script {
+                    def jenkins_ins = Jenkins.instance
+                    println jenkins_ins
+                    
+                    /*
+                    def label = jenkins_ins.getLabel('TEST')
+                    println "   ラベル：${label}"
+                    def nodes = label.getNodes()
+                    */
+                    def nodes = nodesByLabel label: 'TEST', offline: true
+                    nodes.each { node->
+                        println "       ノード：${node}"
+                    }
+                }
+            }
+        }
+        
+        stage('test3') {
+            steps {
+                script {
+                    sleep(time: 10, unit: 'SECONDS')
+                }
+            }
+        }
+    }
+    
+    post {
+        aborted {
+            script {
+                println 'aborted'
+            }
+        }
+        unstable {
+            script {
+                println 'unstable'
+            }
+        }
+        failure {
+            script {
+                println 'failure'
+            }
+        }
+    }
+}
